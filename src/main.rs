@@ -22,7 +22,10 @@ enum Commands {
     /// Remove a card
     Remove { label: String },
     /// Autofill card fields via xdotool
-    Fill { label: String },
+    Fill {
+        /// The card name whos' info you wish to autofill (as enderd by ccvault add)
+        label: String,
+    },
     /// Re-encrypt vault with a new master password
     ChangePassword,
 }
