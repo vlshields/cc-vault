@@ -115,3 +115,114 @@ pub fn save_cards(cards: &[Card], password: &str) -> Result<(), String> {
 pub fn ask_password(prompt: &str) -> String {
     rpassword::prompt_password(prompt).expect("Failed to read password")
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::card::Card;
+
+    fn sample_card() -> Card {
+        Card {
+            label: "Test Visa".into(),
+            number: "4111111111111111".into(),
+            exp: "12/25".into(),
+            cvv: "123".into(),
+            name: "John Doe".into(),
+            zip: "90210".into(),
+        }
+    }
+
+    #[test]
+    fn derive_key_deterministic() {
+        let password = b"hunter2";
+        let salt = [0u8; SALT_LEN];
+        let k1 = derive_key(password, &salt);
+        let k2 = derive_key(password, &salt);
+        assert_eq!(k1, k2);
+    }
+
+    #[test]
+    fn derive_key_different_salts_differ() {
+        let password = b"hunter2";
+        let salt1 = [0u8; SALT_LEN];
+        let salt2 = [1u8; SALT_LEN];
+        let k1 = derive_key(password, &salt1);
+        let k2 = derive_key(password, &salt2);
+        assert_ne!(k1, k2);
+    }
+
+    #[test]
+    fn derive_key_different_passwords_differ() {
+        let salt = [0u8; SALT_LEN];
+        let k1 = derive_key(b"password1", &salt);
+        let k2 = derive_key(b"password2", &salt);
+        assert_ne!(k1, k2);
+    }
+
+    #[test]
+    fn encrypt_decrypt_roundtrip() {
+        let plaintext = b"hello, vault!";
+        let password = "my-secret";
+        let blob = encrypt(plaintext, password);
+        let result = decrypt(&blob, password).unwrap();
+        assert_eq!(result, plaintext);
+    }
+
+    #[test]
+    fn encrypt_produces_different_ciphertext_each_time() {
+        let plaintext = b"same data";
+        let password = "same-password";
+        let blob1 = encrypt(plaintext, password);
+        let blob2 = encrypt(plaintext, password);
+        // Random salt + nonce should make each encryption unique
+        assert_ne!(blob1, blob2);
+    }
+
+    #[test]
+    fn decrypt_wrong_password_fails() {
+        let plaintext = b"secret stuff";
+        let blob = encrypt(plaintext, "correct-password");
+        let result = decrypt(&blob, "wrong-password");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn decrypt_truncated_blob_fails() {
+        let result = decrypt(&[0u8; 10], "password");
+        assert!(result.is_err());
+        assert!(result.unwrap_err().contains("too short"));
+    }
+
+    #[test]
+    fn decrypt_corrupted_blob_fails() {
+        let plaintext = b"secret stuff";
+        let mut blob = encrypt(plaintext, "password");
+        // Flip a byte in the ciphertext portion
+        let last = blob.len() - 1;
+        blob[last] ^= 0xFF;
+        let result = decrypt(&blob, "password");
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn encrypt_decrypt_card_json_roundtrip() {
+        let cards = vec![sample_card()];
+        let json = serde_json::to_vec(&cards).unwrap();
+        let password = "test-master-pw";
+
+        let blob = encrypt(&json, password);
+        let decrypted = decrypt(&blob, password).unwrap();
+        let restored: Vec<Card> = serde_json::from_slice(&decrypted).unwrap();
+
+        assert_eq!(restored.len(), 1);
+        assert_eq!(restored[0].label, "Test Visa");
+        assert_eq!(restored[0].number, "4111111111111111");
+    }
+
+    #[test]
+    fn encrypt_decrypt_empty_data() {
+        let blob = encrypt(b"", "pw");
+        let result = decrypt(&blob, "pw").unwrap();
+        assert!(result.is_empty());
+    }
+}
