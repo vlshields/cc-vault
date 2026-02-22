@@ -1,7 +1,11 @@
 use std::io::{self, Write};
 use std::process::Command;
+use std::thread;
+use std::time::Duration;
 
 use crate::card::Card;
+
+const SWITCH_DELAY_SECS: u64 = 3;
 
 fn check_xdotool() -> Result<(), String> {
     Command::new("which")
@@ -13,18 +17,27 @@ fn check_xdotool() -> Result<(), String> {
     Ok(())
 }
 
-fn wait_for_enter(field_name: &str) {
-    print!("Focus the {} field, then press Enter...", field_name);
+fn wait_and_switch(field_name: &str) {
+    print!("Ready to type {}. Press Enter, then click the field in your browser.", field_name);
     io::stdout().flush().unwrap();
     let mut buf = String::new();
     io::stdin().read_line(&mut buf).unwrap();
+    for i in (1..=SWITCH_DELAY_SECS).rev() {
+        print!("  Typing in {}...\r", i);
+        io::stdout().flush().unwrap();
+        thread::sleep(Duration::from_secs(1));
+    }
+    print!("               \r");
+    io::stdout().flush().unwrap();
 }
 
 fn type_text(text: &str) -> Result<(), String> {
     let status = Command::new("xdotool")
         .arg("type")
+        .arg("--clearmodifiers")
         .arg("--delay")
         .arg("50")
+        .arg("--")
         .arg(text)
         .status()
         .map_err(|e| format!("Failed to run xdotool: {e}"))?;
@@ -38,7 +51,7 @@ pub fn autofill(card: &Card) -> Result<(), String> {
     check_xdotool()?;
 
     println!("Autofill mode for: {}", card.label);
-    println!("Switch to your browser and focus each field when prompted.\n");
+    println!("After pressing Enter, you have {} seconds to click the target field in your browser.\n", SWITCH_DELAY_SECS);
 
     let fields = [
         ("card number", &card.number),
@@ -49,7 +62,7 @@ pub fn autofill(card: &Card) -> Result<(), String> {
     ];
 
     for (name, value) in &fields {
-        wait_for_enter(name);
+        wait_and_switch(name);
         type_text(value)?;
         println!("  Typed {}.", name);
     }
