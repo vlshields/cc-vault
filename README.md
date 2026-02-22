@@ -40,9 +40,9 @@ ln -s target/release/cc-vault ~/.local/bin/cc-vault
 ```
 ### Dependencies
 
-**xclip** - required for `cc-vault copy` (clipboard support)
-**xdotool** - required for `cc-vault fill` (autofill support)
-
+```
+sudo apt install xclip xdotool
+```
 
 ### Running tests
 
@@ -59,4 +59,4 @@ cargo test
 
 ## License
 
-This project is released under [The Unlicense](https://unlicense.org). See [UNLICENSE](UNLICENSE) for details.
+This project is released under The Open Source Transparency License (OSTL)
