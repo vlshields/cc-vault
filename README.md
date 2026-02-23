@@ -18,7 +18,7 @@ ccvault fill <label>                 # Autofill card fields via xdotool
 ccvault change-password              # Re-encrypt vault with a new password
 ```
 
-options for <field>: `number`, `exp`, `cvv`, `name`, `zip`
+options for field: `number`, `exp`, `cvv`, `name`, `zip`
 ## Building
 
 Requires Rust. Clone and build:
