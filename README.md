@@ -52,7 +52,7 @@ cargo test
 
 
 ### To-Do
-- Brute force protection
+x Brute force protection
 - xdotool autofill exposes card data in the process list
 - auto-lock/session timeout
 
