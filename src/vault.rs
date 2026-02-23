@@ -14,7 +14,7 @@ const SALT_LEN: usize = 16;
 const NONCE_LEN: usize = 12;
 const KEY_LEN: usize = 32;
 
-fn vault_path() -> PathBuf {
+pub(crate) fn vault_path() -> PathBuf {
     let mut path = dirs_path();
     path.push("vault.enc");
     path
@@ -85,6 +85,30 @@ pub fn load_cards(password: &str) -> Result<Vec<Card>, String> {
     let cards: Vec<Card> =
         serde_json::from_slice(&plaintext).map_err(|e| format!("Corrupt vault data: {e}"))?;
     Ok(cards)
+}
+
+pub fn load_cards_protected(password: &str) -> Result<Vec<Card>, String> {
+    use crate::lockout;
+
+    lockout::check_destroyed()?;
+
+    // If no vault file exists, no authentication needed
+    if !vault_path().exists() {
+        return Ok(Vec::new());
+    }
+
+    match load_cards(password) {
+        Ok(cards) => {
+            lockout::record_success();
+            Ok(cards)
+        }
+        Err(e) => {
+            if e.contains("Decryption failed") {
+                lockout::record_failure();
+            }
+            Err(e)
+        }
+    }
 }
 
 pub fn save_cards(cards: &[Card], password: &str) -> Result<(), String> {

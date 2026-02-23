@@ -1,6 +1,7 @@
 mod autofill;
 mod card;
 mod clipboard;
+mod lockout;
 mod vault;
 
 use clap::{Parser, Subcommand};
@@ -55,7 +56,7 @@ fn main() {
 fn cmd_add() {
     let password = vault::ask_password("Master password: ");
     // Verify password if vault already exists
-    let mut cards = match vault::load_cards(&password) {
+    let mut cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -76,7 +77,7 @@ fn cmd_add() {
 
 fn cmd_list() {
     let password = vault::ask_password("Master password: ");
-    let cards = match vault::load_cards(&password) {
+    let cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -97,7 +98,7 @@ fn cmd_list() {
 
 fn cmd_show(label: &str) {
     let password = vault::ask_password("Master password: ");
-    let cards = match vault::load_cards(&password) {
+    let cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -116,7 +117,7 @@ fn cmd_show(label: &str) {
 
 fn cmd_remove(label: &str) {
     let password = vault::ask_password("Master password: ");
-    let mut cards = match vault::load_cards(&password) {
+    let mut cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -141,7 +142,7 @@ fn cmd_remove(label: &str) {
 
 fn cmd_fill(label: &str) {
     let password = vault::ask_password("Master password: ");
-    let cards = match vault::load_cards(&password) {
+    let cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -165,7 +166,7 @@ fn cmd_fill(label: &str) {
 
 fn cmd_copy(label: &str, field: &str) {
     let password = vault::ask_password("Master password: ");
-    let cards = match vault::load_cards(&password) {
+    let cards = match vault::load_cards_protected(&password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
@@ -189,7 +190,7 @@ fn cmd_copy(label: &str, field: &str) {
 
 fn cmd_change_password() {
     let old_password = vault::ask_password("Current master password: ");
-    let cards = match vault::load_cards(&old_password) {
+    let cards = match vault::load_cards_protected(&old_password) {
         Ok(c) => c,
         Err(e) => {
             eprintln!("Error: {e}");
