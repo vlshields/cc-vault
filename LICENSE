@@ -1,40 +1,96 @@
+The Open Source Transparency License (OSTL) v1.0
+
+Copyright (c) 2026 Vince Shields
+
 This is free and unencumbered software released into the public domain.
 
-Anyone is free to copy, modify, publish, use, compile, sell, or
-distribute this software, either in source code form or as a compiled
-binary, for any purpose, commercial or non-commercial, and by any
-means.
+Anyone is free to copy, modify, publish, use, compile, sell, or distribute this
+software, either in source code form or as a compiled binary, for any purpose,
+commercial or non-commercial, and by any means.
 
-The Open Source Transparency License (OSTL) v1.0
-Copyright (c) 2026 Vince Shields
-Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to use, copy, modify, merge, publish, distribute, sublicense, and sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to use, copy,
+modify, merge, publish, distribute, sublicense, and sell copies of the
+Software, and to permit persons to whom the Software is furnished to do so,
+subject to the following conditions:
+
 1. Retention of Notice
-The above copyright notice and this license must be retained in all copies or substantial portions of the Software, whether in source or binary form.
+
+The above copyright notice and this license must be retained in all copies or
+substantial portions of the Software, whether in source or binary form.
+
 2. Commercial Transparency Obligation
+
 Any party that engages in any of the following activities:
 
-Selling the Software directly, in whole or in part
-Selling a product or service in which the Software constitutes a substantial or material component
-Charging a fee for access to the Software, including via subscription, licensing fee, or software-as-a-service arrangement
+- Selling the Software directly, in whole or in part
+- Selling a product or service in which the Software constitutes a substantial
+  or material component
+- Charging a fee for access to the Software, including via subscription,
+  licensing fee, or software-as-a-service arrangement
 
 must comply with all of the following:
-(a) Point-of-Sale Notice. Prior to or at the moment of purchase, the purchaser must be clearly informed, in plain language, that the Software or a component thereof is available free of charge under an open source license. This notice must not be buried in fine print, terms of service, or end-user license agreements. It must appear in a location and font size reasonably comparable to the pricing information.
-(b) Access Information. The notice required in (a) must include a functioning URL or clearly described means by which the purchaser may obtain the Software at no cost. This URL or description must remain accurate and accessible for the duration of the commercial offering.
-(c) Scope of Notice. The notice must accurately represent which portions of the product are covered by this license. It is not sufficient to state that "some open source components are used" without identifying the Software by name.
-(d) No Misrepresentation. The selling party must not make representations, whether explicit or implied, that suggest the Software itself — apart from any value-added services, support, or modifications — is proprietary, exclusive, or unavailable elsewhere.
-3. Value-Added Services Exemption
-Nothing in Section 2 prohibits a party from charging for support, installation, customization, managed hosting, training, or other services rendered in connection with the Software, provided that the Software itself is clearly identified as freely available per Section 2(a).
-4. Modifications
-Modified versions of the Software may be distributed under different license terms, provided that:
 
-The original, unmodified Software remains obtainable at no cost as required by Section 2
-The modified portions are clearly distinguished from the original Software
-The notice required by Section 2 accurately distinguishes between the freely available original and any proprietary modifications
+(a) Point-of-Sale Notice.
+Prior to or at the moment of purchase, the purchaser must be clearly informed,
+in plain language, that the Software or a component thereof is available free
+of charge under an open source license. This notice must not be buried in fine
+print, terms of service, or end-user license agreements. It must appear in a
+location and font size reasonably comparable to the pricing information.
+
+(b) Access Information.
+The notice required in (a) must include a functioning URL or clearly described
+means by which the purchaser may obtain the Software at no cost. This URL or
+description must remain accurate and accessible for the duration of the
+commercial offering.
+
+(c) Scope of Notice.
+The notice must accurately represent which portions of the product are covered
+by this license. It is not sufficient to state that "some open source
+components are used" without identifying the Software by name.
+
+(d) No Misrepresentation.
+The selling party must not make representations, whether explicit or implied,
+that suggest the Software itself — apart from any value-added services,
+support, or modifications — is proprietary, exclusive, or unavailable
+elsewhere.
+
+3. Value-Added Services Exemption
+
+Nothing in Section 2 prohibits a party from charging for support, installation,
+customization, managed hosting, training, or other services rendered in
+connection with the Software, provided that the Software itself is clearly
+identified as freely available per Section 2(a).
+
+4. Modifications
+
+Modified versions of the Software may be distributed under different license
+terms, provided that:
+
+- The original, unmodified Software remains obtainable at no cost as required
+  by Section 2
+- The modified portions are clearly distinguished from the original Software
+- The notice required by Section 2 accurately distinguishes between the freely
+  available original and any proprietary modifications
 
 5. No Warranty
-The Software is provided "as is," without warranty of any kind, express or implied, including but not limited to warranties of merchantability, fitness for a particular purpose, or noninfringement. In no event shall the author or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the Software or the use or other dealings in the Software.
+
+The Software is provided "as is," without warranty of any kind, express or
+implied, including but not limited to warranties of merchantability, fitness
+for a particular purpose, or noninfringement. In no event shall the author or
+copyright holders be liable for any claim, damages, or other liability, whether
+in an action of contract, tort, or otherwise, arising from, out of, or in
+connection with the Software or the use or other dealings in the Software.
+
 6. Definitions
 
-"Substantial or material component" means the Software provides core or significant functionality to the product, such that removing it would meaningfully impair the product's primary purpose.
-"Selling party" means any individual, organization, or legal entity engaging in the commercial activities described in Section 2.
-"Point of sale" means any webpage, screen, document, or interaction at which a purchasing decision is made or a transaction is initiated.
+"Substantial or material component" means the Software provides core or
+significant functionality to the product, such that removing it would
+meaningfully impair the product's primary purpose.
+
+"Selling party" means any individual, organization, or legal entity engaging in
+the commercial activities described in Section 2.
+
+"Point of sale" means any webpage, screen, document, or interaction at which a
+purchasing decision is made or a transaction is initiated.
