@@ -59,4 +59,4 @@ x Brute force protection
 
 ## License
 
-This project is released under The Open Source Transparency License (OSTL)
+MIT
