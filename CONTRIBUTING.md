@@ -2,7 +2,7 @@
 
 Thank you for considering a contribution to ccvault. This is a small, security-focused project and outside input is genuinely valuable, especially from people experienced with Rust and cryptography.
 
-### What we're looking for
+### Help Needed!
 
 - Cryptography review and hardening (audit the encryption pipeline, key derivation, memory handling)
 - Bug fixes, especially anything security-related
@@ -10,10 +10,7 @@ Thank you for considering a contribution to ccvault. This is a small, security-f
 - Test coverage improvements
 - Documentation improvements
 
-### What we're NOT looking for
 
-- Cloud sync, remote storage, or any feature that sends data off the machine. The entire point of ccvault is local-only storage.
-- GUI or TUI wrappers. This is a CLI tool by design.
 
 
 # Ground Rules
@@ -23,6 +20,8 @@ Thank you for considering a contribution to ccvault. This is a small, security-f
 - Don't add dependencies unless clearly justified. This project keeps its dependency tree small on purpose.
 - Create an issue before starting work on major changes so the approach can be discussed first.
 - Be respectful and constructive in all interactions.
+- **Beginners are welcome!**
+  
 
 # Your First Contribution
 
@@ -44,34 +43,6 @@ Working on your first Pull Request? You can learn how from this free series, [Ho
 6. Submit a pull request.
 
 For small fixes (typos, formatting, comment cleanup), this process is all you need. For anything that changes behavior or touches crypto code, open an issue first to discuss the approach.
-
-# How to Report a Bug
-
-**If you find a security vulnerability, do NOT open an issue. Email vince@shieldsdev.biz directly instead.**
-
-
-
-For non-security bugs, open a GitHub issue and include:
-
-1. What OS and Rust version are you using?
-2. What command did you run?
-3. What did you expect to happen?
-4. What actually happened?
-
-# How to Suggest a Feature
-
-ccvault's goal is simple: store credit card data locally, encrypted, with minimal attack surface. Feature suggestions should align with that.
-
-Open an issue describing:
-- The feature you'd like
-- Why it's useful
-- How it should work
-
-Features that increase the attack surface or add network connectivity will almost certainly be declined.
-
-# Code Review Process
-
-Pull requests are reviewed by the maintainer. Expect feedback within a reasonable timeframe. After feedback is given, please respond within two weeks or the PR may be closed.
 
 # Conventions
 
