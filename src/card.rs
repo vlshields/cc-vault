@@ -16,9 +16,9 @@ impl Card {
         println!("Enter card details:");
 
         let label = prompt("  Label (e.g. Chase Visa): ");
-        let number = prompt("  Card number: ");
+        let number = prompt_secret("  Card number: ");
         let exp = prompt("  Expiry (MM/YY): ");
-        let cvv = prompt("  CVV: ");
+        let cvv = prompt_secret("  CVV: ");
         let name = prompt("  Cardholder name: ");
         let zip = prompt("  Billing ZIP: ");
 
@@ -49,6 +49,10 @@ fn prompt(msg: &str) -> String {
     let mut input = String::new();
     io::stdin().read_line(&mut input).unwrap();
     input.trim().to_string()
+}
+
+fn prompt_secret(msg: &str) -> String {
+    rpassword::prompt_password(msg).expect("Failed to read secret field")
 }
 
 #[cfg(test)]

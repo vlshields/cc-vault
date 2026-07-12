@@ -1,12 +1,12 @@
 use std::fs;
-use std::os::unix::fs::OpenOptionsExt;
-use std::path::PathBuf;
+use std::os::unix::fs::PermissionsExt;
+use std::path::{Path, PathBuf};
 
 use aes_gcm::aead::{Aead, KeyInit};
 use aes_gcm::{Aes256Gcm, Nonce};
 use argon2::Argon2;
 use rand::RngCore;
-use zeroize::Zeroize;
+use zeroize::{Zeroize, Zeroizing};
 
 use crate::card::Card;
 
@@ -36,10 +36,10 @@ fn derive_key(password: &[u8], salt: &[u8]) -> [u8; KEY_LEN] {
 
 fn encrypt(data: &[u8], password: &str) -> Vec<u8> {
     let mut salt = [0u8; SALT_LEN];
-    rand::thread_rng().fill_bytes(&mut salt);
+    rand::rng().fill_bytes(&mut salt);
 
     let mut nonce_bytes = [0u8; NONCE_LEN];
-    rand::thread_rng().fill_bytes(&mut nonce_bytes);
+    rand::rng().fill_bytes(&mut nonce_bytes);
 
     let mut key = derive_key(password.as_bytes(), &salt);
     let cipher = Aes256Gcm::new_from_slice(&key).unwrap();
@@ -81,10 +81,10 @@ pub fn load_cards(password: &str) -> Result<Vec<Card>, String> {
         return Ok(Vec::new());
     }
     let blob = fs::read(&path).map_err(|e| format!("Failed to read vault: {e}"))?;
-    let plaintext = decrypt(&blob, password)?;
-    let cards: Vec<Card> =
-        serde_json::from_slice(&plaintext).map_err(|e| format!("Corrupt vault data: {e}"))?;
-    Ok(cards)
+    let mut plaintext = decrypt(&blob, password)?;
+    let cards = serde_json::from_slice(&plaintext).map_err(|e| format!("Corrupt vault data: {e}"));
+    plaintext.zeroize();
+    cards
 }
 
 pub fn load_cards_protected(password: &str) -> Result<Vec<Card>, String> {
@@ -113,31 +113,50 @@ pub fn load_cards_protected(password: &str) -> Result<Vec<Card>, String> {
 
 pub fn save_cards(cards: &[Card], password: &str) -> Result<(), String> {
     let dir = dirs_path();
-    fs::create_dir_all(&dir).map_err(|e| format!("Failed to create ~/.ccvault: {e}"))?;
+    ensure_private_dir(&dir)?;
 
-    let json = serde_json::to_vec(cards).unwrap();
+    let mut json = serde_json::to_vec(cards).unwrap();
     let encrypted = encrypt(&json, password);
+    json.zeroize();
 
     let path = vault_path();
-    // Write with 0600 permissions
-    fs::OpenOptions::new()
-        .write(true)
-        .create(true)
-        .truncate(true)
-        .mode(0o600)
-        .open(&path)
-        .and_then(|f| {
-            use std::io::Write;
-            let mut f = f;
-            f.write_all(&encrypted)
-        })
-        .map_err(|e| format!("Failed to write vault: {e}"))?;
+    let mut tmp = tempfile::Builder::new()
+        .prefix("vault.")
+        .suffix(".tmp")
+        .tempfile_in(&dir)
+        .map_err(|e| format!("Failed to create temporary vault file: {e}"))?;
+
+    {
+        use std::io::Write;
+        let file = tmp.as_file_mut();
+        file.set_permissions(fs::Permissions::from_mode(0o600))
+            .map_err(|e| format!("Failed to secure temporary vault file: {e}"))?;
+        file.write_all(&encrypted)
+            .map_err(|e| format!("Failed to write vault: {e}"))?;
+        file.sync_all()
+            .map_err(|e| format!("Failed to sync vault: {e}"))?;
+    }
+
+    tmp.persist(&path)
+        .map_err(|e| format!("Failed to replace vault: {}", e.error))?;
 
     Ok(())
 }
 
-pub fn ask_password(prompt: &str) -> String {
-    rpassword::prompt_password(prompt).expect("Failed to read password")
+fn ensure_private_dir(dir: &Path) -> Result<(), String> {
+    fs::create_dir_all(dir).map_err(|e| format!("Failed to create ~/.ccvault: {e}"))?;
+    let metadata =
+        fs::symlink_metadata(dir).map_err(|e| format!("Failed to inspect ~/.ccvault: {e}"))?;
+    if !metadata.is_dir() {
+        return Err("~/.ccvault exists but is not a directory".into());
+    }
+    fs::set_permissions(dir, fs::Permissions::from_mode(0o700))
+        .map_err(|e| format!("Failed to secure ~/.ccvault permissions: {e}"))?;
+    Ok(())
+}
+
+pub fn ask_password(prompt: &str) -> Zeroizing<String> {
+    Zeroizing::new(rpassword::prompt_password(prompt).expect("Failed to read password"))
 }
 
 #[cfg(test)]

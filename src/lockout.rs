@@ -48,38 +48,26 @@ fn save_state(path: &Path, state: &LockoutState) {
 pub fn check_destroyed() -> Result<(), String> {
     let state = load_state(&lockout_path());
     if state.failed_attempts >= MAX_ATTEMPTS {
-        Err(
-            "Vault has been destroyed after too many failed password attempts. All data is gone."
-                .into(),
-        )
+        Err("Too many failed password attempts. The vault was not deleted; remove ~/.ccvault/lockout.json to retry if you believe this lockout is local DoS.".into())
     } else {
         Ok(())
     }
 }
 
 pub fn record_failure() {
-    record_failure_impl(&lockout_path(), &crate::vault::vault_path());
+    record_failure_impl(&lockout_path());
 }
 
-fn record_failure_impl(lockout: &Path, vault: &Path) {
+fn record_failure_impl(lockout: &Path) {
     let mut state = load_state(lockout);
     state.failed_attempts += 1;
 
-    if state.failed_attempts >= MAX_ATTEMPTS {
-        let _ = std::fs::remove_file(vault);
-        let _ = std::fs::remove_file(lockout);
-        eprintln!(
-            "VAULT DESTROYED: {} failed password attempts reached. All vault data has been permanently deleted.",
-            MAX_ATTEMPTS
-        );
-    } else {
-        save_state(lockout, &state);
-        let remaining = MAX_ATTEMPTS - state.failed_attempts;
-        eprintln!(
-            "WARNING: {}/{} failed attempts. {} attempts remaining before vault destruction.",
-            state.failed_attempts, MAX_ATTEMPTS, remaining
-        );
-    }
+    save_state(lockout, &state);
+    let remaining = MAX_ATTEMPTS.saturating_sub(state.failed_attempts);
+    eprintln!(
+        "WARNING: {}/{} failed attempts. {} attempts remaining before lockout.",
+        state.failed_attempts, MAX_ATTEMPTS, remaining
+    );
 }
 
 pub fn record_success() {
@@ -102,9 +90,7 @@ mod tests {
     fn save_and_load_roundtrip() {
         let dir = tempfile::tempdir().unwrap();
         let path = dir.path().join("lockout.json");
-        let state = LockoutState {
-            failed_attempts: 7,
-        };
+        let state = LockoutState { failed_attempts: 7 };
         save_state(&path, &state);
         let loaded = load_state(&path);
         assert_eq!(loaded.failed_attempts, 7);
@@ -114,14 +100,12 @@ mod tests {
     fn record_failure_increments() {
         let dir = tempfile::tempdir().unwrap();
         let lockout = dir.path().join("lockout.json");
-        let vault = dir.path().join("vault.enc");
-        std::fs::write(&vault, b"fake vault data").unwrap();
 
-        record_failure_impl(&lockout, &vault);
+        record_failure_impl(&lockout);
         let state = load_state(&lockout);
         assert_eq!(state.failed_attempts, 1);
 
-        record_failure_impl(&lockout, &vault);
+        record_failure_impl(&lockout);
         let state = load_state(&lockout);
         assert_eq!(state.failed_attempts, 2);
     }
@@ -130,11 +114,9 @@ mod tests {
     fn record_success_resets() {
         let dir = tempfile::tempdir().unwrap();
         let lockout = dir.path().join("lockout.json");
-        let vault = dir.path().join("vault.enc");
-        std::fs::write(&vault, b"fake vault data").unwrap();
 
-        record_failure_impl(&lockout, &vault);
-        record_failure_impl(&lockout, &vault);
+        record_failure_impl(&lockout);
+        record_failure_impl(&lockout);
         let state = load_state(&lockout);
         assert_eq!(state.failed_attempts, 2);
 
@@ -145,31 +127,25 @@ mod tests {
     }
 
     #[test]
-    fn vault_destroyed_after_max_failures() {
+    fn vault_is_not_destroyed_after_max_failures() {
         let dir = tempfile::tempdir().unwrap();
         let lockout = dir.path().join("lockout.json");
         let vault = dir.path().join("vault.enc");
         std::fs::write(&vault, b"fake vault data").unwrap();
 
         for _ in 0..MAX_ATTEMPTS {
-            record_failure_impl(&lockout, &vault);
+            record_failure_impl(&lockout);
         }
 
-        assert!(!vault.exists(), "vault.enc should be deleted after max failures");
-        assert!(
-            !lockout.exists(),
-            "lockout.json should be deleted after max failures"
-        );
+        assert!(vault.exists(), "failed attempts must not delete vault.enc");
+        assert_eq!(load_state(&lockout).failed_attempts, MAX_ATTEMPTS);
     }
 
     #[test]
     fn warning_message_on_high_failure_count() {
         let dir = tempfile::tempdir().unwrap();
         let lockout = dir.path().join("lockout.json");
-        let vault = dir.path().join("vault.enc");
-        std::fs::write(&vault, b"fake vault data").unwrap();
 
-        // Set state to 12 failures
         save_state(
             &lockout,
             &LockoutState {
@@ -177,12 +153,8 @@ mod tests {
             },
         );
 
-        // Next failure brings it to 13
-        record_failure_impl(&lockout, &vault);
+        record_failure_impl(&lockout);
         let state = load_state(&lockout);
         assert_eq!(state.failed_attempts, 13);
-
-        // Vault should still exist (not yet at 15)
-        assert!(vault.exists());
     }
 }

@@ -54,6 +54,27 @@ pub fn get_field<'a>(card: &'a Card, field: &str) -> Result<&'a str, String> {
     }
 }
 
+pub fn copy_to_clipboard(card: &Card, field: &str) -> Result<(), String> {
+    check_xclip()?;
+
+    let value = get_field(card, field)?;
+    set_clipboard(value)?;
+
+    println!("Copied {field} to clipboard.");
+    print!("Clearing in 10s...");
+    std::io::stdout().flush().unwrap();
+
+    for i in (1..=10).rev() {
+        thread::sleep(Duration::from_secs(1));
+        print!("\rClearing in {i:2}s...");
+        std::io::stdout().flush().unwrap();
+    }
+
+    clear_clipboard()?;
+    println!("\rClipboard cleared.   ");
+    Ok(())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,25 +134,4 @@ mod tests {
         let err = get_field(&card, "").unwrap_err();
         assert!(err.contains("Unknown field"));
     }
-}
-
-pub fn copy_to_clipboard(card: &Card, field: &str) -> Result<(), String> {
-    check_xclip()?;
-
-    let value = get_field(card, field)?;
-    set_clipboard(value)?;
-
-    println!("Copied {field} to clipboard.");
-    print!("Clearing in 10s...");
-    std::io::stdout().flush().unwrap();
-
-    for i in (1..=10).rev() {
-        thread::sleep(Duration::from_secs(1));
-        print!("\rClearing in {i:2}s...");
-        std::io::stdout().flush().unwrap();
-    }
-
-    clear_clipboard()?;
-    println!("\rClipboard cleared.   ");
-    Ok(())
 }
