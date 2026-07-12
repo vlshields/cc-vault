@@ -1,10 +1,12 @@
 # ccvault
 
-A local, encrypted credit card vault for the command line. Card data is stored on disk encrypted with AES-256-GCM, using Argon2 for key derivation from a master password. Nothing leaves your machine.Cards are serialized to JSON, encrypted with AES-256-GCM, and stored at `~/.ccvault/vault.enc` by default. The encryption key is derived from your master password using Argon2, which is set upon first run. A random salt and nonce are generated for each save. The vault file is written with `0600` permissions (owner read/write only). Sensitive data in memory is zeroed on drop via the `zeroize` crate.
+A local, encrypted credit card vault for the command line. Card data is serialized to JSON, encrypted with AES-256-GCM, and stored at `~/.ccvault/vault.enc`. The encryption key is derived from your master password using Argon2. Each save uses a fresh random salt and nonce, writes the vault atomically, stores the vault file with `0600` permissions, and keeps `~/.ccvault` at `0700`.
 
-### Disclaimer 
-CC-Vault is a personal project which started because I don't like to store my payment info in a browser. Storing your payment info locally reduces your attack surface in theory (although this depends entirely on your threat model) but for most people, browser-stored payment info is probably the more pragmatic choice given that it is usually built and audited by large security teams. But if you are one of those privacy nuts like me you might already be using tools like this (keepass for example).
-If you like this idea and you are proficient in Rust and/or cryptography, please consider making a contribution via a PR or just general advice. Thank you!
+Sensitive data in memory is zeroed where practical via the `zeroize` crate. Card number and CVV prompts are hidden. Autofill avoids passing card data as command-line arguments to `xdotool`.
+
+### Disclaimer
+
+This personal project does not claim to be more secure than browser storage.
 
 ## Usage
 
@@ -18,7 +20,10 @@ ccvault fill <label>                 # Autofill card fields via xdotool
 ccvault change-password              # Re-encrypt vault with a new password
 ```
 
-options for field: `number`, `exp`, `cvv`, `name`, `zip`
+Options for `<field>`: `number`, `exp`, `cvv`, `name`, `zip`.
+
+After repeated failed password attempts, ccvault locks further attempts by writing `~/.ccvault/lockout.json`. It does not delete your vault file.
+
 ## Building
 
 Requires Rust. Clone and build:
@@ -29,31 +34,38 @@ cd cc-vault
 cargo build --release
 ```
 
-The binary will be at `target/release/cc-vault`. Copy it somewhere on your `$PATH`:
+The binary will be at `target/release/ccvault`. Copy it somewhere on your `$PATH`:
 
 ```
-cp target/release/cc-vault ~/.local/bin/
+cp target/release/ccvault ~/.local/bin/
 ```
-or symlink
+
+or symlink:
+
 ```
-ln -s target/release/cc-vault ~/.local/bin/cc-vault
+ln -s target/release/ccvault ~/.local/bin/ccvault
 ```
+
 ### Dependencies
+
+`xclip` is required for `ccvault copy`; `xdotool` is required for `ccvault fill`.
 
 ```
 sudo apt install xclip xdotool
 ```
 
-### Running tests
+### Running checks
 
 ```
+cargo fmt --check
+cargo clippy --all-targets -- -D warnings
 cargo test
+cargo audit
 ```
-
 
 ### To-Do
-- auto-lock/session timeout
 
+- auto-lock/session timeout
 
 ## License
 
